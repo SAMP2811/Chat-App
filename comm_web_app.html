@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>2-Way Communication</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f4f4f4; }
+    .container { max-width: 600px; margin: auto; padding: 20px; background: #fff; min-height: 100vh; display: flex; flex-direction: column; }
+    .messages { flex: 1; overflow-y: auto; padding-bottom: 10px; }
+    .msg { margin: 10px 0; padding: 10px; border-radius: 10px; max-width: 80%; }
+    .a { background: #d3d3d3; align-self: flex-start; }
+    .b { background: #b3e5fc; align-self: flex-end; }
+    .input-area { display: flex; gap: 10px; }
+    textarea { flex: 1; resize: none; padding: 10px; border-radius: 5px; border: 1px solid #ccc; }
+    button { padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; }
+    .controls { display: flex; justify-content: space-between; margin-bottom: 10px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="controls">
+      <button onclick="startListening()">User A: Speak</button>
+    </div>
+    <div class="messages" id="chat"></div>
+    <div class="input-area">
+      <textarea id="textInput" rows="2" placeholder="User B: Type your message..."></textarea>
+      <button onclick="sendMessage()">Send</button>
+    </div>
+  </div>
+
+  <script>
+    const chat = document.getElementById("chat");
+    const input = document.getElementById("textInput");
+
+    function addMessage(sender, text) {
+      const msg = document.createElement("div");
+      msg.className = "msg " + (sender === "A" ? "a" : "b");
+      msg.innerText = text;
+      chat.appendChild(msg);
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    function startListening() {
+      const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+      recognition.lang = 'en-US';
+      recognition.start();
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        addMessage("A", transcript);
+      };
+    }
+
+    function sendMessage() {
+      const text = input.value.trim();
+      if (!text) return;
+      addMessage("B", text);
+      input.value = "";
+      const tts = new SpeechSynthesisUtterance(text);
+      tts.lang = 'en-US';
+      window.speechSynthesis.speak(tts);
+    }
+  </script>
+</body>
+</html>
