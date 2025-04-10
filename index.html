@@ -1,43 +1,113 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>2-Way Communication</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f4f4f4; }
-    .container { max-width: 600px; margin: auto; padding: 20px; background: #fff; min-height: 100vh; display: flex; flex-direction: column; }
-    .messages { flex: 1; overflow-y: auto; padding-bottom: 10px; }
-    .msg { margin: 10px 0; padding: 10px; border-radius: 10px; max-width: 80%; }
-    .a { background: #d3d3d3; align-self: flex-start; }
-    .b { background: #b3e5fc; align-self: flex-end; }
-    .input-area { display: flex; gap: 10px; }
-    textarea { flex: 1; resize: none; padding: 10px; border-radius: 5px; border: 1px solid #ccc; }
-    button { padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; }
-    .controls { display: flex; justify-content: space-between; margin-bottom: 10px; }
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f4f4f4;
+    }
+    .container {
+      max-width: 900px;
+      margin: auto;
+      padding: 20px;
+      background: #fff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .chat-labels {
+      display: flex;
+      justify-content: space-between;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    .chat-area {
+      display: flex;
+      gap: 10px;
+      flex: 1;
+    }
+    .column {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 10px;
+      background: #fafafa;
+      height: 400px;
+      overflow-y: auto;
+    }
+    .msg {
+      margin: 5px 0;
+      padding: 10px;
+      border-radius: 10px;
+      max-width: 100%;
+      word-wrap: break-word;
+    }
+    .speaking {
+      background: #e0e0e0;
+      align-self: flex-start;
+    }
+    .typing {
+      background: #cfe9ff;
+      align-self: flex-end;
+    }
+    .controls {
+      display: flex;
+      justify-content: space-between;
+      margin: 20px 0 10px;
+    }
+    textarea {
+      flex: 1;
+      padding: 10px;
+      resize: none;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    button {
+      padding: 10px 15px;
+      margin-left: 10px;
+      border: none;
+      border-radius: 5px;
+      background-color: #007bff;
+      color: white;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <div class="controls">
-      <button onclick="startListening()">User A: Speak</button>
+    <div class="chat-labels">
+      <span>User Speaking</span>
+      <span>User Typing</span>
     </div>
-    <div class="messages" id="chat"></div>
-    <div class="input-area">
-      <textarea id="textInput" rows="2" placeholder="User B: Type your message..."></textarea>
-      <button onclick="sendMessage()">Send</button>
+    <div class="chat-area">
+      <div class="column" id="speakingChat"></div>
+      <div class="column" id="typingChat"></div>
+    </div>
+    <div class="controls">
+      <button onclick="startListening()">🎙️ Speak</button>
+      <textarea id="textInput" rows="2" placeholder="Type your response here..."></textarea>
+      <button onclick="sendMessage()">▶️ Speak it</button>
     </div>
   </div>
 
   <script>
-    const chat = document.getElementById("chat");
+    const speakingChat = document.getElementById("speakingChat");
+    const typingChat = document.getElementById("typingChat");
     const input = document.getElementById("textInput");
 
-    function addMessage(sender, text) {
+    function addMessage(target, text, className) {
       const msg = document.createElement("div");
-      msg.className = "msg " + (sender === "A" ? "a" : "b");
+      msg.className = "msg " + className;
       msg.innerText = text;
-      chat.appendChild(msg);
-      chat.scrollTop = chat.scrollHeight;
+      target.appendChild(msg);
+      target.scrollTop = target.scrollHeight;
     }
 
     function startListening() {
@@ -46,14 +116,14 @@
       recognition.start();
       recognition.onresult = (event) => {
         const transcript = event.results[0][0].transcript;
-        addMessage("A", transcript);
+        addMessage(speakingChat, transcript, "speaking");
       };
     }
 
     function sendMessage() {
       const text = input.value.trim();
       if (!text) return;
-      addMessage("B", text);
+      addMessage(typingChat, text, "typing");
       input.value = "";
       const tts = new SpeechSynthesisUtterance(text);
       tts.lang = 'en-US';
